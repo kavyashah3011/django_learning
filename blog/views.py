@@ -1,28 +1,32 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseNotFound
+from django.urls import reverse
+
+
+blog_names = {
+    "python-intro": "Introduction to Python programming.",
+    "django-basics": "Basics of Django framework.",
+    "python-oops": "Object-Oriented Programming in Python.",
+    "regex": "Understanding Regular Expressions."
+}
 
 def home_page(request):
-    return HttpResponse("Welcome to the Home Page!")
+    return render(request, 'blogs/index.html')
 
 def blogpost(request):
-    return HttpResponse("This is a blog post.")
-
-def python_intro(request):
-    return HttpResponse("Introduction to Python programming.")
-
-def django_basics(request):
-    return HttpResponse("Basics of Django framework.")
-
-def python_oops(request):
-    return HttpResponse("Object-Oriented Programming in Python.")
+    list_item = ""
+    blog_list = list(blog_names.keys())
+    for b in blog_list:
+        blog_path = reverse('blog_post', args=[b])
+        list_item += f'<li><a href="{blog_path}">{b.capitalize()}</a></li>'
+        
+    res_data = f"<ul>{list_item}</ul>"
+    return HttpResponse(res_data)
 
 def blog_post(request, blog):
-    if blog == "python-intro":
-        return python_intro(request)
-    elif blog == "django-basics":
-        return django_basics(request)
-    elif blog == "python-oops":
-        return python_oops(request)
-    else:
+    try:
+        res = blog_names[blog]
+        return render(request, 'blogs/post.html', {
+            "blog_text": res, "blog_name": blog})
+    except KeyError:
         return HttpResponseNotFound("Blog post not found.")
-    return HttpResponse(f"This is the blog post: {blog}")
